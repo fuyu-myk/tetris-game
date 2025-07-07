@@ -34,7 +34,7 @@ You will need to install the Raylib library before running this project.
 
 Next, you need to ensure that a C++ compiler has been installed on your system (e.g., `g++` for Linux/Windows or `clang++` for macOS).
 
-To build and run the project, ensure that your are in the `tetris-game` directory.
+To build and run the project, ensure that you are in the `tetris-game` directory.
 1. Run the following in the terminal:
 ```shell
 make
