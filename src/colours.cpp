@@ -27,10 +27,14 @@ const Color ghostPurple = {166, 0, 247, 50}; // T
 const Color darkPurple = {47, 32, 97, 255};
 const Color lightPurple = {66, 50, 130, 255};
 
+/// @brief Fetches colours of tetrominoes.
+/// @return Returns a vector of `Color` with an index corresponding to the `id`s of each tetromino.
 std::vector<Color> GetCellColours() {
     return {empty, yellow, cyan, red, green, orange, blue, purple};
 }
 
+/// @brief Fetches colours of ghost tetrominoes.
+/// @return Returns a vector of `Color` with an index corresponding to the `id`s of each tetromino.
 std::vector<Color> GetGhostColours() {
     return {empty, ghostYellow, ghostCyan, ghostRed, ghostGreen, ghostOrange, ghostBlue, ghostPurple};
 }

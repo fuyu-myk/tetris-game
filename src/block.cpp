@@ -34,6 +34,8 @@ const std::vector<Position> oBlock = {
     {Position(0, 0), Position(0, 0), Position(0, 0), Position(0, 0), Position(0, 0)}
 };
 
+/// @brief Initialises variables relating to the tetrominoes.
+/// @details Inclusive of `cellSize` in pixels, rotation state, colours (both regular and ghost blocks) and offsets.
 Block::Block() {
     cellSize = 30;
     rotationState = 0;
@@ -43,6 +45,11 @@ Block::Block() {
     colOffset = 0;
 }
 
+/**
+ * @brief Draws the block at the specific point on the playboard with the appropriate colour.
+ * @param offsetX Offset for column in pixels (default: 11 to account for border around playboard).
+ * @param offsetY Offset for row in pixels (default: 11 to account for border around playboard).
+ */
 void Block::Draw(int offsetX, int offsetY) {
     std::vector<Position> tiles = GetCellPositions();
 
@@ -51,6 +58,12 @@ void Block::Draw(int offsetX, int offsetY) {
     }
 }
 
+/**
+ * @brief Draws the "ghost block" at the specific point on the playboard with the appropriate colour.
+ * @details Highlights lowest possible legal position of the tetromino if the player were to "hard drop".
+ * Colours are just the original tetromino colours but with decreased opacity.
+ * @param ghostRow Offset for row in actual tiles (of the playboard).
+ */
 void Block::DrawGhost(int ghostRow) {
     std::vector<Position> tiles = GetCellPositions();
 
@@ -59,11 +72,25 @@ void Block::DrawGhost(int ghostRow) {
     }
 }
 
+/**
+ * @brief Moves tetromino around the playboard.
+ * @details Position of the tetromino is calculated by adding/subtracting the offsets to/from
+ * the original position as defined in `tetrominoes.cpp`.
+ * It is also used to position the tetromino appropriately when it spawns at the top of the playboard.
+ * @param rows The row offset.
+ * @param cols The column offset.
+ */
 void Block::Move(int rows, int cols) {
     rowOffset += rows;
     colOffset += cols;
 }
 
+/**
+ * @brief Queries the position of the tetromino on the playboard.
+ * @details The current position is obtained from adding the original defined position in `tetrominoes.cpp`
+ * to the row and column offsets.
+ * @return A vector of `Position` containing coordinates for each block in the tetromino.
+ */
 std::vector<Position> Block::GetCellPositions() {
     std::vector<Position> tiles = cells[rotationState];
     std::vector<Position> movedTiles;
@@ -76,6 +103,11 @@ std::vector<Position> Block::GetCellPositions() {
     return movedTiles;
 }
 
+/**
+ * @brief Rotates the current tetromino clockwise.
+ * @details Handles "wall kicks" through the defined `const` global variables at the top of this document.
+ * @return A vector<Position> that handles each "wall kick" case.
+ */
 std::vector<Position> Block::RotateClockwise() {
     rotationState++;
 
@@ -95,6 +127,11 @@ std::vector<Position> Block::RotateClockwise() {
     }
 }
 
+/**
+ * @brief Rotates the current tetromino counterclockwise.
+ * @details Handles "wall kicks" through the defined `const` global variables at the top of this document.
+ * @return A vector<Position> that handles each "wall kick" case.
+ */
 std::vector<Position> Block::RotateCounterClockwise() {
     rotationState--;
     
