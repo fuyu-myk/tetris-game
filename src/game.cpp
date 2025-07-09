@@ -19,6 +19,7 @@ Game::Game() {
     gameOver = false;
     lastMoveRotate = false;
     score = 0;
+	linesCleared = 0;
 
     // Initialising audio
     InitAudioDevice();
@@ -328,6 +329,7 @@ void Game::LockBlock() {
 	
     UpdateScore(rowsCleared, 0, 0, tSpinType, isTSpin);
 	lastMoveRotate = false;
+	linesCleared += rowsCleared;
 }
 
 /**
@@ -414,19 +416,22 @@ void Game::GhostBlock() {
  * @param isTSpin Whether the last move before locking is a T-Spin.
  */
 void Game::UpdateScore(int rowsCleared, int softDropPoints, int hardDropPoints, bool tSpinType, bool isTSpin) {
+	int calcLevel = 1 + floor(linesCleared / 10);
+	int level = (calcLevel <= 15) ? calcLevel : 15;
+
     // Handling line clears
     switch (rowsCleared) {
         case 1: {
 			if (isTSpin) {
 				if (tSpinType) {
-					score += 800;
+					score += 800 * level;
 					break;
 				} else {
-					score += 200;
+					score += 200 * level;
 					break;
 				}
 			} else {
-				score += 100;
+				score += 100 * level;
 				break;
 			}
 		}
@@ -434,39 +439,39 @@ void Game::UpdateScore(int rowsCleared, int softDropPoints, int hardDropPoints, 
         case 2: {
 			if (isTSpin) {
 				if (tSpinType) {
-					score += 1200;
+					score += 1200 * level;
 					break;
 				} else {
-					score += 400;
+					score += 400 * level;
 					break;
 				}
 			} else {
-				score += 300;
+				score += 300 * level;
 				break;
 			}
 		}
 
         case 3: {
 			if (isTSpin) {
-				score += 1600;
+				score += 1600 * level;
 				break;
 			} else {
-				score += 500;
+				score += 500 * level;
 				break;
 			}
 		}
 
         case 4:
-            score += 800;
+            score += 800 * level;
             break;
 
         default: {
 			if (isTSpin) {
 				if (tSpinType) {
-					score += 400;
+					score += 400 * level;
 					break;
 				} else {
-					score += 100;
+					score += 100 * level;
 					break;
 				}
 			} else {
@@ -479,6 +484,7 @@ void Game::UpdateScore(int rowsCleared, int softDropPoints, int hardDropPoints, 
     score += softDropPoints;
     score += hardDropPoints * 2;
 }
+
 
 /// @brief Renders a Triple T-Spin setup on the playboard
 void Game::TripleTSpin() {

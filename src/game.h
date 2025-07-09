@@ -11,6 +11,7 @@ class Game {
         int score;
         Music music;
         bool lastMoveRotate;
+        int linesCleared;
         Game();
         ~Game();
         void Draw();

@@ -1,5 +1,6 @@
-#include <raylib.h>
 #include <iostream>
+#include <math.h>
+#include <raylib.h>
 #include "game.h"
 #include "colours.h"
 
@@ -25,6 +26,12 @@ bool EventTrigger(double interval) {
     return false;
 }
 
+double Gravity(int level) {
+    int x = level - 1;
+
+    return pow(0.8 - (x * 0.007), x);
+}
+
 int main() {
     // Initialising game window & fps
     InitWindow(500, 620, "Tetris");
@@ -40,7 +47,12 @@ int main() {
         UpdateMusicStream(game.music);
         game.HandleKeystrokes();
 
-        if (EventTrigger(1)) {
+        // Gravity
+        int calcLevel = 1 + floor(game.linesCleared / 10);
+        int level = (calcLevel <= 15) ? calcLevel : 15;
+        double interval = Gravity(level);
+
+        if (EventTrigger(interval)) {
             game.MoveDown();
         }
 

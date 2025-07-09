@@ -10,11 +10,8 @@ There exists a [great tutorial](https://www.youtube.com/watch?v=wVYKG_ch4yM) on 
 - [x] Next block display - Displays the next block (todo: display multiple possibly)
 - [x] Ghost blocks - Representation of where current tetromino will land if allowed to hard drop
 - [x] Wall kick - Potentially allows rotation of tetromino when obstructed
+- [x] Levelling system - Increases based on lines cleared; tetromino falls faster with each level
 - [ ] Piece holding - To hold pieces for later
-- [ ] Levelling system - Increases based on lines cleared; tetromino falls faster with each level
-- [ ] Music & SFX
-- [ ] Custom graphics for blocks
-- [ ] Alerts for line clears, t-spins etc
 
 ## Scoring
 - [x] Single
@@ -26,6 +23,11 @@ There exists a [great tutorial](https://www.youtube.com/watch?v=wVYKG_ch4yM) on 
 - [x] T-spins - mini/regular; no line/single/double/triple
 - [ ] Combos
 - [ ] Difficult line clears
+
+## Design
+- [ ] Music & SFX
+- [ ] Custom graphics for blocks
+- [ ] Alerts for line clears, t-spins etc
 
 # How to run the project
 You will need to install the Raylib library before running this project. 
