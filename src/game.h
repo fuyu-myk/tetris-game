@@ -10,6 +10,7 @@ class Game {
         bool gameOver;
         int score;
         Music music;
+        bool lastMoveRotate;
         Game();
         ~Game();
         void Draw();
@@ -28,10 +29,24 @@ class Game {
         void MoveRight();
         void RotateBlockClockwise();
         void RotateBlockCounterClockwise();
+        bool TSpinType();
         void LockBlock();
         bool IsOutside(int row, int col);
         bool BlockCollision(int row, int col);
         void Reset();
-        void UpdateScore(int rowsCleared, int softDropPoints, int hardDropPoints);
+        void UpdateScore(
+            int rowsCleared,
+            int softDropPoints,
+            int hardDropPoints,
+            bool tSpinType,
+            bool isTSpin
+        );
         void GhostBlock();
+
+        // Game States
+        void TripleTSpin();
+        void DoubleTSpinRegular();
+        void DoubleTSpinMini();
+        void SingleTSpinRegular();
+        void SingleTSpinMini();
 };

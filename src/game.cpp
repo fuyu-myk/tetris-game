@@ -11,8 +11,13 @@ Game::Game() {
     current = GetRandomBlock();
     next = GetRandomBlock();
 
+	// Game state
+	// Load a game state from one of the game state functions
+	//TripleTSpin();
+	
     // Initialising game state and score
     gameOver = false;
+    lastMoveRotate = false;
     score = 0;
 
     // Initialising audio
@@ -31,8 +36,8 @@ Game::~Game() {
  * @brief Randomly chooses a block from a vector of all block possibilities.
  * @return The randomly chosen block.
  * @details If the blocks vector is empty, it will refill it with all available blocks.
- * The function uses `arc4random()` to generate a random index to select a block.
- * The selected block is then removed from the vector to ensure it is not chosen again.
+ * The function uses `rand()` to generate a random index to select a block.
+ * The selected block is then removed from the vector to ensure repeated block spawns are impossible.
  */
 Block Game::GetRandomBlock() {
     // When blocks vec is empty
@@ -40,7 +45,7 @@ Block Game::GetRandomBlock() {
         blocks = GetAllBlocks();
     }
 
-    int randomIdx = arc4random() % blocks.size();
+    int randomIdx = rand() % blocks.size();
     Block block = blocks[randomIdx];
     blocks.erase(blocks.begin() + randomIdx);
 
@@ -102,12 +107,12 @@ void Game::HandleKeystrokes() {
 
         case KEY_DOWN:
             MoveDown();
-            UpdateScore(0, 1, 0);
+            UpdateScore(0, 1, 0, false, false);
             break;
 
         case KEY_SPACE: {
             int tilesDropped = HardDrop();
-            UpdateScore(0, 0, tilesDropped);
+            UpdateScore(0, 0, tilesDropped, false, false);
             break;
         }
 
@@ -126,6 +131,7 @@ void Game::HandleKeystrokes() {
 /// @brief Method that houses the "move left" logic.
 void Game::MoveLeft() {
     if (!gameOver) {
+		lastMoveRotate = false;
         current.Move(0, -1);
     
         if (IsOutside(0, 0) || BlockCollision(0, 0)) {
@@ -137,6 +143,7 @@ void Game::MoveLeft() {
 /// @brief Method that houses the "move right" logic.
 void Game::MoveRight() {
     if (!gameOver) {
+		lastMoveRotate = false;
         current.Move(0, 1);
     
         if (IsOutside(0, 0) || BlockCollision(0, 0)) {
@@ -151,9 +158,15 @@ void Game::MoveDown() {
         current.Move(1, 0);
     
         if (IsOutside(0, 0) || BlockCollision(0, 0)) {
+			// Block cannot move another tile down
+			// If last move was a rotate, it should still be true
             current.Move(-1, 0);
             LockBlock();
-        }
+        } else {
+			// Block can still be in free-fall
+			// If last move was a rotate, it will not be true after this move
+			lastMoveRotate = false;
+		}
     }
 }
 
@@ -164,6 +177,7 @@ int Game::HardDrop() {
     int tilesDropped = 0;
 
     if (!gameOver) {
+        lastMoveRotate = false;
         while (!IsOutside(0, 0) && !BlockCollision(0, 0)) {
             current.Move(1, 0);
             tilesDropped++;
@@ -192,17 +206,19 @@ void Game::RotateBlockClockwise() {
                     !BlockCollision(wallKickCases[i].row, wallKickCases[i].col)) {
                     current.Move(wallKickCases[i].row, wallKickCases[i].col);
                     rotated = true;
+					lastMoveRotate = true;
                     // play rotate sound
                     break;
                 }
-    
             }
 
             // Test failed: Undo rotation
             if (!rotated) {
                 current.RotateCounterClockwise();
+                lastMoveRotate = false;
             }
         } else {
+			lastMoveRotate = true;
             // play rotate sound
         }
     }
@@ -224,6 +240,7 @@ void Game::RotateBlockCounterClockwise() {
                     !BlockCollision(wallKickCases[i].row, wallKickCases[i].col)) {
                     current.Move(wallKickCases[i].row, wallKickCases[i].col);
                     rotated = true;
+					lastMoveRotate = true;
                     // play rotate sound
                     break;
                 }
@@ -232,11 +249,54 @@ void Game::RotateBlockCounterClockwise() {
             // Test failed: Undo rotation
             if (!rotated) {
                 current.RotateCounterClockwise();
+                lastMoveRotate = false;
             }
         } else {
+			lastMoveRotate = true;
             // play rotate sound
         }
     }
+}
+
+/**
+ * @brief Determines whether the T-Spin is a mini T-Spin or a regular T-Spin.
+ * @details This function is only called if `current.id` corresponds to a T-Block, i.e. `current.id == 7` and when `lastMoveRotate` is `true`.
+ * All tetrominoes are created with an invisible grid in mind. Using this property, it is easy to find the center block
+ * of the T-Block in the `TBlock` class under `tetrominoes.cpp`. See the `note` for more information.
+ * @return `true` if it is a regular T-Spin, `false` if it is a mini T-Spin.
+ * @note The `centerBlock` is obtained through `tiles[3]` because it is index of the center block defined in all rotations of the T-Block.
+ * 
+ * See `class TBlock` in `tetrominoes.cpp`.
+ */
+bool Game::TSpinType() {
+	std::vector<Position> tiles = current.GetCellPositions();
+	Position centerBlock = tiles[3];
+	std::vector<Position> cornerBlocks = {Position(-1, -1), Position(-1, 1), Position(1, 1), Position(1, -1)};
+	int noCornersFilled = 0;
+
+	printf("Center: (%d, %d)\n", centerBlock.row, centerBlock.col);
+	for (Position corner: cornerBlocks) {
+		int checkRow = centerBlock.row + corner.row;
+		int checkCol = centerBlock.col + corner.col;
+
+		printf("Checking corner (%d, %d) ", checkRow, checkCol);
+		if (!grid.IsOutsideBoundary(checkRow, checkCol) &&
+			grid.grid[checkRow][checkCol] != 0) {
+			printf("FILLED\n");
+			noCornersFilled += 1;
+		} else {
+			printf("EMPTY/OUTSIDE\n");
+		}
+
+		if (noCornersFilled >= 3) {
+			printf("Corners filled: %d\n", noCornersFilled);
+			printf("Regular T-Spin\n");
+			return true;
+		}
+	}
+	printf("Corners filled: %d\n", noCornersFilled);
+	printf("T-Spin mini\n");
+	return false;
 }
 
 /// @brief Method that prevents current block from being moved.
@@ -246,10 +306,17 @@ void Game::RotateBlockCounterClockwise() {
 /// and updates the score accordingly.
 void Game::LockBlock() {
     std::vector<Position> tiles = current.GetCellPositions();
+	bool tSpinType = false;
+	bool isTSpin = false;
 
     for (Position item: tiles) {
         grid.grid[item.row][item.col] = current.id;
     }
+	
+	if (lastMoveRotate == true && current.id == 7) {
+		tSpinType = TSpinType();
+		isTSpin = true;
+	}
 
     current = next;
     if (BlockCollision(0, 0)) {
@@ -258,8 +325,11 @@ void Game::LockBlock() {
 
     next = GetRandomBlock();
     int rowsCleared = grid.ClearFullRows();
-    UpdateScore(rowsCleared, 0, 0);
+	
+    UpdateScore(rowsCleared, 0, 0, tSpinType, isTSpin);
+	lastMoveRotate = false;
 }
+
 /**
  * @brief Method to determine if the tetromino is moved outside the playable grid.
  * @param row Modifier to current tile row.
@@ -336,34 +406,221 @@ void Game::GhostBlock() {
 /**
  * @brief Updates the score with reference to the common tetris scoring system.
  * @details Score updates are calculated and subsequently added to the public `score` variable.
- * @param rowsCleared Number of rows cleared in a single `.LockBlock()` call.
+ * Each relevant case has checks for T-Spins in order to award the appropriate scores.
+ * @param rowsCleared Number of rows cleared during a single `.LockBlock()` call.
  * @param softDropPoints Number of tiles moved to calculate the score for "Soft Drop".
  * @param hardDropPoints Number of tiles moved to calculate the score for "Hard Drop".
+ * @param tSpinType Type of T-Spin: `true` for regular, `false` for mini.
+ * @param isTSpin Whether the last move before locking is a T-Spin.
  */
-void Game::UpdateScore(int rowsCleared, int softDropPoints, int hardDropPoints) {
+void Game::UpdateScore(int rowsCleared, int softDropPoints, int hardDropPoints, bool tSpinType, bool isTSpin) {
     // Handling line clears
     switch (rowsCleared) {
-        case 1:
-            score += 100;
-            break;
+        case 1: {
+			if (isTSpin) {
+				if (tSpinType) {
+					score += 800;
+					break;
+				} else {
+					score += 200;
+					break;
+				}
+			} else {
+				score += 100;
+				break;
+			}
+		}
 
-        case 2:
-            score += 300;
-            break;
+        case 2: {
+			if (isTSpin) {
+				if (tSpinType) {
+					score += 1200;
+					break;
+				} else {
+					score += 400;
+					break;
+				}
+			} else {
+				score += 300;
+				break;
+			}
+		}
 
-        case 3:
-            score += 500;
-            break;
+        case 3: {
+			if (isTSpin) {
+				score += 1600;
+				break;
+			} else {
+				score += 500;
+				break;
+			}
+		}
 
         case 4:
             score += 800;
             break;
 
-        default:
-            break;
+        default: {
+			if (isTSpin) {
+				if (tSpinType) {
+					score += 400;
+					break;
+				} else {
+					score += 100;
+					break;
+				}
+			} else {
+				break;
+			}
+		}
     }
 
     // Handling drops
     score += softDropPoints;
     score += hardDropPoints * 2;
+}
+
+/// @brief Renders a Triple T-Spin setup on the playboard
+void Game::TripleTSpin() {
+    grid.grid[18][0] = 6;
+	grid.grid[19][0] = 6;
+	grid.grid[19][1] = 6;
+	grid.grid[19][2] = 6;
+
+	grid.grid[18][1] = 7;
+	grid.grid[17][1] = 7;
+	grid.grid[17][2] = 7;
+	grid.grid[17][0] = 7;
+
+	grid.grid[19][4] = 1;
+	grid.grid[19][5] = 1;
+	grid.grid[18][4] = 1;
+	grid.grid[18][5] = 1;
+
+	grid.grid[19][6] = 2;
+	grid.grid[19][7] = 2;
+	grid.grid[19][8] = 2;
+	grid.grid[19][9] = 2;
+
+	grid.grid[17][5] = 4;
+	grid.grid[17][6] = 4;
+	grid.grid[18][6] = 4;
+	grid.grid[18][7] = 4;
+
+	grid.grid[18][8] = 3;
+	grid.grid[17][8] = 3;
+	grid.grid[17][7] = 3;
+	grid.grid[16][7] = 3;
+	
+	grid.grid[18][9] = 5;
+	grid.grid[17][9] = 5;
+	grid.grid[16][9] = 5;
+	grid.grid[16][8] = 5;
+
+	grid.grid[17][4] = 5;
+	grid.grid[16][4] = 5;
+	grid.grid[15][4] = 5;
+	grid.grid[15][3] = 5;
+}
+
+/// @brief Renders a regular Double T-Spin setup on the playboard
+void Game::DoubleTSpinRegular() {
+    grid.grid[18][0] = 6;
+	grid.grid[19][0] = 6;
+	grid.grid[19][1] = 6;
+	grid.grid[19][2] = 6;
+
+	grid.grid[18][1] = 4;
+	grid.grid[17][1] = 4;
+	grid.grid[17][2] = 4;
+	grid.grid[16][2] = 4;
+
+	grid.grid[19][4] = 2;
+	grid.grid[19][5] = 2;
+	grid.grid[19][6] = 2;
+	grid.grid[19][7] = 2;
+
+	grid.grid[18][5] = 5;
+	grid.grid[18][6] = 5;
+	grid.grid[18][7] = 5;
+	grid.grid[17][7] = 5;
+
+	grid.grid[18][8] = 1;
+	grid.grid[18][9] = 1;
+	grid.grid[19][8] = 1;
+	grid.grid[19][9] = 1;
+}
+
+/// @brief Renders a mini Double T-Spin setup on the playboard
+void Game::DoubleTSpinMini() {
+    grid.grid[18][0] = 6;
+	grid.grid[19][0] = 6;
+	grid.grid[19][1] = 6;
+	grid.grid[19][2] = 6;
+
+	grid.grid[18][1] = 2;
+	grid.grid[17][1] = 2;
+	grid.grid[16][1] = 2;
+	grid.grid[15][1] = 2;
+
+	grid.grid[19][4] = 2;
+	grid.grid[19][5] = 2;
+	grid.grid[19][6] = 2;
+	grid.grid[19][7] = 2;
+
+	grid.grid[18][5] = 5;
+	grid.grid[18][6] = 5;
+	grid.grid[18][7] = 5;
+	grid.grid[17][7] = 5;
+
+	grid.grid[18][8] = 1;
+	grid.grid[18][9] = 1;
+	grid.grid[19][8] = 1;
+	grid.grid[19][9] = 1;
+}
+
+/// @brief Renders a regular Single T-Spin setup on the playbord
+void Game::SingleTSpinRegular() {
+    grid.grid[17][2] = 4;
+	grid.grid[17][3] = 4;
+	grid.grid[18][3] = 4;
+	grid.grid[18][4] = 4;
+
+	grid.grid[17][5] = 1;
+	grid.grid[17][6] = 1;
+	grid.grid[18][5] = 1;
+	grid.grid[18][6] = 1;
+
+	grid.grid[17][7] = 6;
+	grid.grid[18][7] = 6;
+	grid.grid[18][8] = 6;
+	grid.grid[18][9] = 6;
+
+	grid.grid[19][0] = 2;
+	grid.grid[19][1] = 2;
+	grid.grid[19][2] = 2;
+	grid.grid[19][3] = 2;
+
+	grid.grid[19][6] = 2;
+	grid.grid[19][7] = 2;
+	grid.grid[19][8] = 2;
+	grid.grid[19][9] = 2;
+}
+
+/// @brief Renders a mini Single T-Spin setup on the playboard
+void Game::SingleTSpinMini() {
+    grid.grid[18][2] = 4;
+	grid.grid[18][3] = 4;
+	grid.grid[19][3] = 4;
+	grid.grid[19][4] = 4;
+
+	grid.grid[18][5] = 1;
+	grid.grid[18][6] = 1;
+	grid.grid[19][5] = 1;
+	grid.grid[19][6] = 1;
+
+	grid.grid[18][7] = 6;
+	grid.grid[19][7] = 6;
+	grid.grid[19][8] = 6;
+	grid.grid[19][9] = 6;
 }

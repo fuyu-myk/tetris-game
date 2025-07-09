@@ -23,7 +23,7 @@ There exists a [great tutorial](https://www.youtube.com/watch?v=wVYKG_ch4yM) on 
 - [x] Tetris
 - [x] Soft drop
 - [x] Hard drop
-- [ ] T-spins - mini/regular; no line/single/double/triple
+- [x] T-spins - mini/regular; no line/single/double/triple
 - [ ] Combos
 - [ ] Difficult line clears
 
@@ -39,12 +39,17 @@ To build and run the project, ensure that you are in the `tetris-game` directory
 ```shell
 make
 ```
-2. Finally, run the executable (`game.exe` on Windows):
+2. Finally, run the executable (`tetris.exe` on Windows):
 ```shell
-./game
+./tetris
 ```
 
 Happy playing!! 😊​😊​
+
+# Game states
+For easier testing, a handful of game states were generated. They are located as functions in `game.cpp`.
+
+If you like to see/use these cases, simply call the relevant game state function in `Game::Game()`.
 
 # Additional credits
 Font used - [Minecraft](https://www.dafont.com/minecraft.font)
