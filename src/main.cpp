@@ -6,6 +6,7 @@
 
 
 double gravity_lastUpdateTime = 0;
+double interval = 0.8;
 double lastMoveLeftTime = 0;
 double lastMoveRightTime = 0;
 double lastMoveDownTime = 0;
@@ -55,21 +56,27 @@ int main() {
 
         // Tetromino movement
         double currentTime = GetTime();
-        game.HandleMovementKeystrokes(&lastMoveLeftTime, &lastMoveRightTime, &lastMoveDownTime, &currentTime);
+        bool isGravityStronger = interval < 0.1;
+        game.HandleMovementKeystrokes(&lastMoveLeftTime, &lastMoveRightTime, &lastMoveDownTime, &currentTime, isGravityStronger);
 
         // Gravity - Pauses when moving down; resumes once not moving down
         bool downKeyUp = IsKeyUp(KEY_DOWN);
 
-        if (downKeyUp) {
+        if (downKeyUp || isGravityStronger) {
             int calcLevel = 1 + floor(game.linesCleared / 10);
             int level = (calcLevel <= 15) ? calcLevel : 15;
-            double interval = Gravity(level);
+            double* ptrInterval = &interval;
+            *ptrInterval = Gravity(level);
 
             if (EventTrigger(interval, &gravity_lastUpdateTime)) {
                 game.MoveDown(false);
             }
         }
 
+        // Lock delay
+        game.LockDelay();
+
+        // Drawing
         BeginDrawing();
         ClearBackground(darkPurple);
 

@@ -20,6 +20,9 @@ Game::Game() {
     lastMoveRotate = false;
     score = 0;
 	linesCleared = 0;
+	lockResets = 15;
+	lockDelayActive = false;
+	lockDelayStartTime = 0.0;
 
     // Initialising audio
     InitAudioDevice();
@@ -41,6 +44,9 @@ Game::~Game() {
  * The selected block is then removed from the vector to ensure repeated block spawns are impossible.
  */
 Block Game::GetRandomBlock() {
+	// Reset max lock resets
+	lockResets = 15;
+
     // When blocks vec is empty
     if (blocks.empty()) {
         blocks = GetAllBlocks();
@@ -126,35 +132,38 @@ void Game::HandleSingleKeystrokes() {
  * @param downTime Pointer to `lastMoveDownTime` in `main.cpp`.
  * @param currentTime Pointer to `currentTime` in `main.cpp`.
  */
-void Game::HandleMovementKeystrokes(double *leftTime, double *rightTime, double *downTime, double *currentTime) {
+void Game::HandleMovementKeystrokes(
+	double *leftTime, double *rightTime, double *downTime, double *currentTime, bool isGravityStronger
+) {
 	const double moveInterval = 0.1;
 
 	if (IsKeyPressed(KEY_LEFT)) {
-			MoveLeft();
-            *leftTime = *currentTime;
-        } else if (IsKeyDown(KEY_LEFT) && *currentTime - *leftTime >= moveInterval) {
-			MoveLeft();
-            *leftTime = *currentTime;
-        }
+		MoveLeft();
+		*leftTime = *currentTime;
+	} else if (IsKeyDown(KEY_LEFT) && *currentTime - *leftTime >= moveInterval) {
+		MoveLeft();
+		*leftTime = *currentTime;
+	}
 
-        if (IsKeyPressed(KEY_RIGHT)) {
-			MoveRight();
-            *rightTime = *currentTime;
-        } else if (IsKeyDown(KEY_RIGHT) && *currentTime - *rightTime >= moveInterval) {
-			MoveRight();
-            *rightTime = *currentTime;
-        }
+	if (IsKeyPressed(KEY_RIGHT)) {
+		MoveRight();
+		*rightTime = *currentTime;
+	} else if (IsKeyDown(KEY_RIGHT) && *currentTime - *rightTime >= moveInterval) {
+		MoveRight();
+		*rightTime = *currentTime;
+	}
 
-        if (IsKeyPressed(KEY_DOWN)) {
-			MoveDown(true);
-            *downTime = *currentTime;
-        } else if (IsKeyDown(KEY_DOWN) && *currentTime - *downTime >= moveInterval) {
-			MoveDown(true);
-            *downTime = *currentTime;
-        }
+	if (IsKeyPressed(KEY_DOWN) && !isGravityStronger) {
+		MoveDown(true);
+		*downTime = *currentTime;
+	} else if ((IsKeyDown(KEY_DOWN) && *currentTime - *downTime >= moveInterval) && !isGravityStronger) {
+		MoveDown(true);
+		*downTime = *currentTime;
+	}
 }
 
 /// @brief Method that houses the "move left" logic.
+/// @details If tetromino is under lock delay, decrement `lockResets` and reset delay time.
 void Game::MoveLeft() {
     if (!gameOver) {
 		lastMoveRotate = false;
@@ -162,11 +171,18 @@ void Game::MoveLeft() {
     
         if (IsOutside(0, 0) || BlockCollision(0, 0)) {
             current.Move(0, 1);
+			return;
         }
+
+		if (lockDelayActive) {
+			lockDelayStartTime = GetTime();
+			lockResets -= 1;
+		}
     }
 }
 
 /// @brief Method that houses the "move right" logic.
+/// @details If tetromino is under lock delay, decrement `lockResets` and reset delay time.
 void Game::MoveRight() {
     if (!gameOver) {
 		lastMoveRotate = false;
@@ -174,28 +190,39 @@ void Game::MoveRight() {
     
         if (IsOutside(0, 0) || BlockCollision(0, 0)) {
             current.Move(0, -1);
+			return;
         }
+
+		if (lockDelayActive) {
+			lockDelayStartTime = GetTime();
+			lockResets -= 1;
+		}
     }
 }
 
 /// @brief Method that houses the "move down" or "soft drop" logic.
 void Game::MoveDown(bool softDrop) {
     if (!gameOver) {
-        current.Move(1, 0);
-    
-        if (IsOutside(0, 0) || BlockCollision(0, 0)) {
+        if (IsOutside(1, 0) || BlockCollision(1, 0)) {
 			// Block cannot move another tile down
 			// If last move was a rotate, it should still be true
-            current.Move(-1, 0);
-            LockBlock();
+
+			// Start lock block timer
+			if (!lockDelayActive) {
+				lockDelayActive = true;
+				lockDelayStartTime = GetTime();
+			}
         } else {
 			// Block can still be in free-fall
 			// If last move was a rotate, it will not be true after this move
+			current.Move(1, 0);
 			lastMoveRotate = false;
 
 			if (softDrop) {
 				UpdateScore(0, 1, 0, false, false);
 			}
+
+			lockDelayActive = false;
 		}
     }
 }
@@ -224,6 +251,8 @@ int Game::HardDrop() {
 /// @details Checks if tetromino passes any of the "Wall Kick" tests.
 /// If a test passes, the block will be placed in the appropriate position.
 /// If all tests fail, the block will not rotate
+///
+/// If tetromino is under lock delay, decrement `lockResets` and reset delay time.
 void Game::RotateBlockClockwise() {
     if (!gameOver) {
         // Wall kick cases for rotation
@@ -237,6 +266,12 @@ void Game::RotateBlockClockwise() {
                     current.Move(wallKickCases[i].row, wallKickCases[i].col);
                     rotated = true;
 					lastMoveRotate = true;
+
+					if (lockDelayActive) {
+						lockDelayStartTime = GetTime();
+						lockResets -= 1;
+					}
+
                     // play rotate sound
                     break;
                 }
@@ -249,6 +284,12 @@ void Game::RotateBlockClockwise() {
             }
         } else {
 			lastMoveRotate = true;
+
+			if (lockDelayActive) {
+				lockDelayStartTime = GetTime();
+				lockResets -= 1;
+			}
+
             // play rotate sound
         }
     }
@@ -258,6 +299,8 @@ void Game::RotateBlockClockwise() {
 /// @details Checks if tetromino passes any of the "Wall Kick" tests.
 /// If a test passes, the block will be placed in the appropriate position.
 /// If all tests fail, the block will not rotate.
+///
+/// If tetromino is under lock delay, decrement `lockResets` and reset delay time.
 void Game::RotateBlockCounterClockwise() {
     if (!gameOver) {
         // Wall kick cases for rotation
@@ -271,6 +314,12 @@ void Game::RotateBlockCounterClockwise() {
                     current.Move(wallKickCases[i].row, wallKickCases[i].col);
                     rotated = true;
 					lastMoveRotate = true;
+
+					if (lockDelayActive) {
+						lockDelayStartTime = GetTime();
+						lockResets -= 1;
+					}
+
                     // play rotate sound
                     break;
                 }
@@ -283,6 +332,12 @@ void Game::RotateBlockCounterClockwise() {
             }
         } else {
 			lastMoveRotate = true;
+
+			if (lockDelayActive) {
+				lockDelayStartTime = GetTime();
+				lockResets -= 1;
+			}
+
             // play rotate sound
         }
     }
@@ -359,6 +414,26 @@ void Game::LockBlock() {
     UpdateScore(rowsCleared, 0, 0, tSpinType, isTSpin);
 	lastMoveRotate = false;
 	linesCleared += rowsCleared;
+}
+
+/// @brief Method that is called in the game loop for lock delay.
+/// @details Maximum time before a tetromino is locked is 0.5 seconds.
+/// Timer is reset if tetromino is in free fall again or moved/rotated.
+/// Maximum number of moves/rotations (when not in free fall) is 15.
+void Game::LockDelay() {
+	const double maxDelay = 0.5;
+	
+	if (lockDelayActive) {
+		if (IsOutside(1, 0) || BlockCollision(1, 0)) {
+			if ((GetTime() - lockDelayStartTime) >= maxDelay || lockResets <= 0) {
+				LockBlock();
+				lockDelayActive = false;
+				lockResets = 15;
+			}
+		} else {
+			lockDelayActive = false;
+		}
+	}
 }
 
 /**

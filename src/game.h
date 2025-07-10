@@ -19,10 +19,12 @@ class Game {
             double *leftTime,
             double *rightTime,
             double *downTime,
-            double *currentTime
+            double *currentTime,
+            bool isGravityStronger
         );
         void MoveDown(bool softDrop);
         int HardDrop();
+        void LockDelay();
     
     private:
         Grid grid;
@@ -30,6 +32,9 @@ class Game {
         Block current;
         Block next;
         bool lastMoveRotate;
+        int lockResets;
+        bool lockDelayActive;
+        double lockDelayStartTime;
         Block GetRandomBlock();
         std::vector<Block> GetAllBlocks();
         void MoveLeft();
