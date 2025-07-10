@@ -5,7 +5,10 @@
 #include "colours.h"
 
 
-double lastUpdateTime = 0;
+double gravity_lastUpdateTime = 0;
+double lastMoveLeftTime = 0;
+double lastMoveRightTime = 0;
+double lastMoveDownTime = 0;
 
 /**
  * @brief Checks if the specified interval has passed since the last update.
@@ -15,17 +18,20 @@ double lastUpdateTime = 0;
  * @return `true` if the interval has passed, `false` otherwise.
  * @note This is used to control the automatic falling of tetrominoes in the game.
  */
-bool EventTrigger(double interval) {
+bool EventTrigger(double interval, double *lastUpdateTime) {
     double currentTime = GetTime();
 
-    if (currentTime - lastUpdateTime >= interval) {
-        lastUpdateTime = currentTime;
+    if (currentTime - gravity_lastUpdateTime >= interval) {
+        *lastUpdateTime = currentTime;
         return true;
     }
 
     return false;
 }
 
+/// @brief Handles the gravity of the tetromino based on the level of the player.
+/// @param level Level of the player.
+/// @return Interval before tetromino falls one tile in seconds.
 double Gravity(int level) {
     int x = level - 1;
 
@@ -33,7 +39,7 @@ double Gravity(int level) {
 }
 
 int main() {
-    // Initialising game window & fps
+    // Initialising game window & attributes
     InitWindow(500, 620, "Tetris");
     SetTargetFPS(60);
 
@@ -45,15 +51,23 @@ int main() {
     // Game loop
     while (WindowShouldClose() == false) {
         UpdateMusicStream(game.music);
-        game.HandleKeystrokes();
+        game.HandleSingleKeystrokes();
 
-        // Gravity
-        int calcLevel = 1 + floor(game.linesCleared / 10);
-        int level = (calcLevel <= 15) ? calcLevel : 15;
-        double interval = Gravity(level);
+        // Tetromino movement
+        double currentTime = GetTime();
+        game.HandleMovementKeystrokes(&lastMoveLeftTime, &lastMoveRightTime, &lastMoveDownTime, &currentTime);
 
-        if (EventTrigger(interval)) {
-            game.MoveDown();
+        // Gravity - Pauses when moving down; resumes once not moving down
+        bool downKeyUp = IsKeyUp(KEY_DOWN);
+
+        if (downKeyUp) {
+            int calcLevel = 1 + floor(game.linesCleared / 10);
+            int level = (calcLevel <= 15) ? calcLevel : 15;
+            double interval = Gravity(level);
+
+            if (EventTrigger(interval, &gravity_lastUpdateTime)) {
+                game.MoveDown(false);
+            }
         }
 
         BeginDrawing();

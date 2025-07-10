@@ -9,14 +9,19 @@ class Game {
     public:
         bool gameOver;
         int score;
-        Music music;
-        bool lastMoveRotate;
         int linesCleared;
+        Music music;
         Game();
         ~Game();
         void Draw();
-        void HandleKeystrokes();
-        void MoveDown();
+        void HandleSingleKeystrokes();
+        void HandleMovementKeystrokes(
+            double *leftTime,
+            double *rightTime,
+            double *downTime,
+            double *currentTime
+        );
+        void MoveDown(bool softDrop);
         int HardDrop();
     
     private:
@@ -24,6 +29,7 @@ class Game {
         std::vector<Block> blocks;
         Block current;
         Block next;
+        bool lastMoveRotate;
         Block GetRandomBlock();
         std::vector<Block> GetAllBlocks();
         void MoveLeft();

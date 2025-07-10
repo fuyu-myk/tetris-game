@@ -86,11 +86,11 @@ void Game::Draw() {
 }
 
 /**
- * @brief Binds keystrokes with game functionality.
+ * @brief Binds non-movement keystrokes with game functionality.
  * @details Follows typical tetris keybinds on PC, with keystrokes to
- * move, rotate, hard drop and restart game.
+ * rotate, hard drop and restart game.
  */
-void Game::HandleKeystrokes() {
+void Game::HandleSingleKeystrokes() {
     int keyStroke = GetKeyPressed();
     if (gameOver && keyStroke != 0) {
         gameOver = false;
@@ -98,19 +98,6 @@ void Game::HandleKeystrokes() {
     }
     
     switch(keyStroke) {
-        case KEY_LEFT:
-            MoveLeft();
-            break;
-        
-        case KEY_RIGHT:
-            MoveRight();
-            break;
-
-        case KEY_DOWN:
-            MoveDown();
-            UpdateScore(0, 1, 0, false, false);
-            break;
-
         case KEY_SPACE: {
             int tilesDropped = HardDrop();
             UpdateScore(0, 0, tilesDropped, false, false);
@@ -127,6 +114,44 @@ void Game::HandleKeystrokes() {
             RotateBlockCounterClockwise();
             break;
     }
+}
+
+/**
+ * @brief Binds movement keystrokes with game functionality.
+ * @details Follows typical tetris keybinds on PC for movement.
+ * Press once to move one tile.
+ * Hold to move across multiple tiles at a constant rate.
+ * @param leftTime Pointer to `lastMoveLeftTime` in `main.cpp`.
+ * @param rightTime Pointer to `lastMoveRightTime` in `main.cpp`.
+ * @param downTime Pointer to `lastMoveDownTime` in `main.cpp`.
+ * @param currentTime Pointer to `currentTime` in `main.cpp`.
+ */
+void Game::HandleMovementKeystrokes(double *leftTime, double *rightTime, double *downTime, double *currentTime) {
+	const double moveInterval = 0.1;
+
+	if (IsKeyPressed(KEY_LEFT)) {
+			MoveLeft();
+            *leftTime = *currentTime;
+        } else if (IsKeyDown(KEY_LEFT) && *currentTime - *leftTime >= moveInterval) {
+			MoveLeft();
+            *leftTime = *currentTime;
+        }
+
+        if (IsKeyPressed(KEY_RIGHT)) {
+			MoveRight();
+            *rightTime = *currentTime;
+        } else if (IsKeyDown(KEY_RIGHT) && *currentTime - *rightTime >= moveInterval) {
+			MoveRight();
+            *rightTime = *currentTime;
+        }
+
+        if (IsKeyPressed(KEY_DOWN)) {
+			MoveDown(true);
+            *downTime = *currentTime;
+        } else if (IsKeyDown(KEY_DOWN) && *currentTime - *downTime >= moveInterval) {
+			MoveDown(true);
+            *downTime = *currentTime;
+        }
 }
 
 /// @brief Method that houses the "move left" logic.
@@ -154,7 +179,7 @@ void Game::MoveRight() {
 }
 
 /// @brief Method that houses the "move down" or "soft drop" logic.
-void Game::MoveDown() {
+void Game::MoveDown(bool softDrop) {
     if (!gameOver) {
         current.Move(1, 0);
     
@@ -167,6 +192,10 @@ void Game::MoveDown() {
 			// Block can still be in free-fall
 			// If last move was a rotate, it will not be true after this move
 			lastMoveRotate = false;
+
+			if (softDrop) {
+				UpdateScore(0, 1, 0, false, false);
+			}
 		}
     }
 }
