@@ -12,7 +12,7 @@ There exists a [great tutorial](https://www.youtube.com/watch?v=wVYKG_ch4yM) on 
 - [x] Wall kick - Potentially allows rotation of tetromino when obstructed (cycles through defined cases)
 - [x] Levelling system - Increases based on lines cleared; tetromino falls faster with each level
 - [x] Lock delay - 0.5 second delay before tetromino is locked
-- [ ] Piece holding - To hold pieces for later
+- [x] Piece holding - To hold pieces for later
 
 ## Scoring
 - [x] Single

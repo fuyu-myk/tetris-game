@@ -9,6 +9,7 @@
 class Block {
     public:
         int id;
+        int rotationState;
         std::map<int, std::vector<Position>> cells;
         Block();
         void Draw(int offsetX, int offsetY);
@@ -20,7 +21,6 @@ class Block {
 
     private:
         int cellSize;
-        int rotationState;
         std::vector<Color> colours;
         std::vector<Color> ghostColours;
         int rowOffset;

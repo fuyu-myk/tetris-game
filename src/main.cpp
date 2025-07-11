@@ -41,7 +41,7 @@ double Gravity(int level) {
 
 int main() {
     // Initialising game window & attributes
-    InitWindow(500, 620, "Tetris");
+    InitWindow(692, 756, "Tetris");
     SetTargetFPS(60);
 
     Font font = LoadFontEx("fonts/Minecraft.ttf", 64, 0, 0);
@@ -81,27 +81,35 @@ int main() {
         ClearBackground(darkPurple);
 
         // Score
-        DrawTextEx(font, "Score", {352, 15}, 35, 2, WHITE);
-        DrawRectangleRounded({320, 55, 170, 60}, 0.3, 6, lightPurple);
-
+        DrawRectangle(0, 676, 692, 80, darkerPurple);
+        DrawRectangle(0, 676, 692, 8, lighterPurple);
         char scoreText[10];
         snprintf(scoreText, sizeof(scoreText), "%d", game.score);
         Vector2 textSize = MeasureTextEx(font, scoreText, 35, 2);
 
-        DrawTextEx(font, scoreText, {320 + (170 - textSize.x) / 2, 70}, 35, 2, WHITE);
+        DrawTextEx(font, scoreText, {181 + (330 - textSize.x) / 2, 692}, 35, 2, WHITE);
 
         // Next block
-        DrawTextEx(font, "Next", {363, 175}, 35, 2, WHITE);
-        DrawRectangleRounded({320, 215, 170, 180}, 0.3, 6, lightPurple);
+        DrawRectangleRounded({511, 8, 181, 213}, 0.3, 6, lighterPurple);
+        DrawRectangle(511, 8, 90, 8, lighterPurple);
+        DrawTextEx(font, "Next", {519 + 33, 16}, 30, 10, WHITE);
+        DrawRectangleRounded({519, 48, 165, 165}, 0.3, 6, darkerPurple);
+
+        // Hold block
+        DrawRectangleRounded({0, 8, 181, 213}, 0.3, 6, lighterPurple);
+        DrawRectangle(91, 8, 90, 8, lighterPurple);
+        DrawTextEx(font, "Hold", {8 + 37, 16}, 30, 10, WHITE);
+        DrawRectangleRounded({8, 48, 165, 165}, 0.3, 6, darkerPurple);
+        
+        game.Draw();
         
         // Game over
         if (game.gameOver) {
-            DrawTextEx(font, "Game Over", {320, 450}, 27, 2, WHITE);
-            DrawTextEx(font, "Press any key", {325, 500}, 20, 2, WHITE);
-            DrawTextEx(font, "to restart", {350, 525}, 20, 2, WHITE);
+            DrawRectangle(0, 0, 692, 676, {0, 0, 0, 150});
+            DrawTextEx(font, "Game Over", {197, 274}, 50, 2, WHITE);
+            DrawTextEx(font, "Press any key", {267, 324}, 20, 2, WHITE);
+            DrawTextEx(font, "to restart", {267 + 25, 341}, 20, 2, WHITE);
         }
-
-        game.Draw();
 
         EndDrawing();
     }

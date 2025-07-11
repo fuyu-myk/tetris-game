@@ -37,7 +37,7 @@ const std::vector<Position> oBlock = {
 /// @brief Initialises variables relating to the tetrominoes.
 /// @details Inclusive of `cellSize` in pixels, rotation state, colours (both regular and ghost blocks) and offsets.
 Block::Block() {
-    cellSize = 30;
+    cellSize = 33;
     rotationState = 0;
     colours = GetCellColours();
     ghostColours = GetGhostColours();
@@ -47,8 +47,8 @@ Block::Block() {
 
 /**
  * @brief Draws the block at the specific point on the playboard with the appropriate colour.
- * @param offsetX Offset for column in pixels (default: 11 to account for border around playboard).
- * @param offsetY Offset for row in pixels (default: 11 to account for border around playboard).
+ * @param offsetX Offset for column in pixels (default: 181 to account for border and hold).
+ * @param offsetY Offset for row in pixels (default: 16 to account for border around playboard).
  */
 void Block::Draw(int offsetX, int offsetY) {
     std::vector<Position> tiles = GetCellPositions();
@@ -68,7 +68,7 @@ void Block::DrawGhost(int ghostRow) {
     std::vector<Position> tiles = GetCellPositions();
 
     for (Position item: tiles) {
-        DrawRectangle(item.col * cellSize + 11, (item.row + ghostRow) * cellSize + 11, cellSize - 1, cellSize - 1, ghostColours[id]);
+        DrawRectangle(item.col * cellSize + 181, (item.row + ghostRow) * cellSize + 16, cellSize - 1, cellSize - 1, ghostColours[id]);
     }
 }
 

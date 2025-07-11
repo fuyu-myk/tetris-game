@@ -26,6 +26,8 @@ const Color ghostPurple = {166, 0, 247, 50}; // T
 // Interface colours
 const Color darkPurple = {47, 32, 97, 255};
 const Color lightPurple = {66, 50, 130, 255};
+const Color darkerPurple = {24, 13, 59, 255};
+const Color lighterPurple = {90, 72, 163, 255};
 
 /// @brief Fetches colours of tetrominoes.
 /// @return Returns a vector of `Color` with an index corresponding to the `id`s of each tetromino.

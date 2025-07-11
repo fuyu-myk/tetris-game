@@ -31,10 +31,12 @@ class Game {
         std::vector<Block> blocks;
         Block current;
         Block next;
+        Block hold;
         bool lastMoveRotate;
         int lockResets;
         bool lockDelayActive;
         double lockDelayStartTime;
+        bool justHeld;
         Block GetRandomBlock();
         std::vector<Block> GetAllBlocks();
         void MoveLeft();
@@ -54,6 +56,7 @@ class Game {
             bool isTSpin
         );
         void GhostBlock();
+        void HoldBlock();
 
         // Game States
         void TripleTSpin();

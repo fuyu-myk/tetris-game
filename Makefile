@@ -419,15 +419,20 @@ ifeq ($(PLATFORM),PLATFORM_DESKTOP)
 		del *.o *.exe /s
 	endif
 	ifeq ($(PLATFORM_OS),LINUX)
-	find -type f -executable | xargs file -i | grep -E 'x-object|x-archive|x-sharedlib|x-executable' | rev | cut -d ':' -f 2- | rev | xargs rm -fv
+		find -type f -executable | xargs file -i | grep -E 'x-object|x-archive|x-sharedlib|x-executable' | rev | cut -d ':' -f 2- | rev | xargs rm -fv
+		find $(OBJ_DIR) $(SRC_DIR) -name '*.o' -delete
+		rm -f $(PROJECT_NAME) $(BIN_DIR)/*
 	endif
 	ifeq ($(PLATFORM_OS),OSX)
 		find . -type f -perm +ugo+x -delete
+		find $(OBJ_DIR) $(SRC_DIR) -name '*.o' -delete
 		rm -f *.o
+		rm -f $(PROJECT_NAME) $(BIN_DIR)/*
 	endif
 endif
 ifeq ($(PLATFORM),PLATFORM_RPI)
 	find . -type f -executable -delete
+	find $(OBJ_DIR) $(SRC_DIR) -name '*.o' -delete
 	rm -fv *.o
 endif
 ifeq ($(PLATFORM),PLATFORM_WEB)

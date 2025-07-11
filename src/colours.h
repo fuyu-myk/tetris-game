@@ -28,6 +28,8 @@ extern const Color ghostPurple;
 // Interface colours
 extern const Color darkPurple;
 extern const Color lightPurple;
+extern const Color darkerPurple;
+extern const Color lighterPurple;
 
 std::vector<Color> GetCellColours();
 std::vector<Color> GetGhostColours();

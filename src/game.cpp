@@ -10,12 +10,13 @@ Game::Game() {
     blocks = GetAllBlocks();
     current = GetRandomBlock();
     next = GetRandomBlock();
+	hold.id = 0;
 
 	// Game state
 	// Load a game state from one of the game state functions
 	//TripleTSpin();
 	
-    // Initialising game state and score
+    // Initialising game attributes and score
     gameOver = false;
     lastMoveRotate = false;
     score = 0;
@@ -23,6 +24,7 @@ Game::Game() {
 	lockResets = 15;
 	lockDelayActive = false;
 	lockDelayStartTime = 0.0;
+	justHeld = false;
 
     // Initialising audio
     InitAudioDevice();
@@ -71,22 +73,57 @@ std::vector<Block> Game::GetAllBlocks() {
  * the next block and the ghost block.
  */
 void Game::Draw() {
+	DrawRectangle(173, 8, 346, 676, lighterPurple);
+	DrawRectangle(181, 16, 330, 660, darkPurple);
     grid.Draw();
-    current.Draw(11, 11);
+    current.Draw(181, 16);
 
     switch(next.id) {
         case 1:
-            next.Draw(255, 275);
+            next.Draw(387 + 50, 48 + 50);
             break;
 
         case 2:
-            next.Draw(255, 290);
+            next.Draw(420 + 17, 48 + 65);
             break;
 
         default:
-            next.Draw(270, 270);
+            next.Draw(420 + 33, 48 + 49);
             break;
     }
+
+	switch(hold.id) {
+		case 0:
+			break;
+
+		case 1:
+			OBlock().Draw(-123 + 50, 48 + 50);
+			break;
+
+		case 2:
+			IBlock().Draw(-91 + 17, 48 + 65);
+			break;
+
+		case 3:
+			SBlock().Draw(-91 + 33, 48 + 49);
+			break;
+
+		case 4:
+			ZBlock().Draw(-91 + 33, 48 + 49);
+			break;
+
+		case 5:
+			LBlock().Draw(-91 + 33, 48 + 49);
+			break;
+
+		case 6:
+			JBlock().Draw(-91 + 33, 48 + 49);
+			break;
+
+		case 7:
+			TBlock().Draw(-91 + 33, 48 + 49);
+			break;
+	}
 
     GhostBlock();
 }
@@ -119,6 +156,11 @@ void Game::HandleSingleKeystrokes() {
         case KEY_LEFT_CONTROL:
             RotateBlockCounterClockwise();
             break;
+		
+		case KEY_C:
+		case KEY_LEFT_SHIFT:
+			HoldBlock();
+			break;
     }
 }
 
@@ -414,6 +456,7 @@ void Game::LockBlock() {
     UpdateScore(rowsCleared, 0, 0, tSpinType, isTSpin);
 	lastMoveRotate = false;
 	linesCleared += rowsCleared;
+	justHeld = false;
 }
 
 /// @brief Method that is called in the game loop for lock delay.
@@ -507,6 +550,52 @@ void Game::GhostBlock() {
     
     // Draw ghost block
     current.DrawGhost(ghostRow);
+}
+
+void Game::HoldBlock() {
+	if (!justHeld) {
+		justHeld = true;
+		current.rotationState = 0;
+
+		if (hold.id == 0) {
+			hold = current;
+			current = next;
+			next = GetRandomBlock();
+		} else {
+			Block temp = hold;
+			hold = current;
+
+			switch (temp.id) {
+				case 1:
+					current = OBlock();
+					break;
+
+				case 2:
+					current = IBlock();
+					break;
+
+				case 3:
+					current = SBlock();
+					break;
+
+				case 4:
+					current = ZBlock();
+					break;
+
+				case 5:
+					current = LBlock();
+					break;
+
+				case 6:
+					current = JBlock();
+					break;
+
+				case 7:
+					current = TBlock();
+					break;
+			}
+		}
+	}
 }
 
 /**
