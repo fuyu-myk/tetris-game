@@ -15,10 +15,7 @@ There exists a [great tutorial](https://www.youtube.com/watch?v=wVYKG_ch4yM) on 
 - [x] Piece holding - To hold pieces for later
 
 ## Scoring
-- [x] Single
-- [x] Double
-- [x] Triple
-- [x] Tetris
+- [x] Line clears - single/double/triple/tetris
 - [x] Soft drop
 - [x] Hard drop
 - [x] T-spins - mini/regular; no line/single/double/triple
