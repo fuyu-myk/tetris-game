@@ -138,30 +138,30 @@ void Game::HandleSingleKeystrokes() {
     if (gameOver && keyStroke != 0) {
         gameOver = false;
         Reset();
-    }
-    
-    switch(keyStroke) {
-        case KEY_SPACE: {
-            int tilesDropped = HardDrop();
-            UpdateScore(0, 0, tilesDropped, false, false);
-            break;
-        }
+    } else {
+		switch(keyStroke) {
+			case KEY_SPACE: {
+				int tilesDropped = HardDrop();
+				UpdateScore(0, 0, tilesDropped, false, false);
+				break;
+			}
 
-        case KEY_X:
-        case KEY_UP:
-            RotateBlockClockwise();
-            break;
+			case KEY_X:
+			case KEY_UP:
+				RotateBlockClockwise();
+				break;
 
-        case KEY_Z:
-        case KEY_LEFT_CONTROL:
-            RotateBlockCounterClockwise();
-            break;
-		
-		case KEY_C:
-		case KEY_LEFT_SHIFT:
-			HoldBlock();
-			break;
-    }
+			case KEY_Z:
+			case KEY_LEFT_CONTROL:
+				RotateBlockCounterClockwise();
+				break;
+			
+			case KEY_C:
+			case KEY_LEFT_SHIFT:
+				HoldBlock();
+				break;
+		}
+	}
 }
 
 /**
