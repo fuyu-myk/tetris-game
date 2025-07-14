@@ -100,6 +100,14 @@ int main() {
         DrawRectangle(91, 8, 90, 8, lighterPurple);
         DrawTextEx(font, "Hold", {8 + 37, 16}, 30, 10, WHITE);
         DrawRectangleRounded({8, 48, 165, 165}, 0.3, 6, darkerPurple);
+
+        // Combo count
+        if (game.comboCount > 0) {
+            char comboText[10];
+            snprintf(comboText, sizeof(comboText), "%d COMBO", game.comboCount);
+            Vector2 comboSize = MeasureTextEx(font, comboText, 24, 2);
+            DrawTextEx(font, comboText, {8 + (165 - comboSize.x) / 2, 240}, 24, 2, WHITE);
+        }
         
         game.Draw();
         

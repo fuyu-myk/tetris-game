@@ -22,8 +22,8 @@ There exists a [great tutorial](https://www.youtube.com/watch?v=wVYKG_ch4yM) on 
 - [x] Soft drop
 - [x] Hard drop
 - [x] T-spins - mini/regular; no line/single/double/triple
-- [ ] Combos
-- [ ] Difficult line clears
+- [x] Combos
+- [x] Difficult line clears
 
 ## Design
 - [ ] Music & SFX

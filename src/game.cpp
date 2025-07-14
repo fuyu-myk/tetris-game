@@ -25,6 +25,8 @@ Game::Game() {
 	lockDelayActive = false;
 	lockDelayStartTime = 0.0;
 	justHeld = false;
+	comboCount = -1;
+	b2bDifficult = false;
 
     // Initialising audio
     InitAudioDevice();
@@ -452,6 +454,11 @@ void Game::LockBlock() {
 
     next = GetRandomBlock();
     int rowsCleared = grid.ClearFullRows();
+	if (rowsCleared > 0) {
+		comboCount++;
+	} else {
+		comboCount = -1;
+	}
 	
     UpdateScore(rowsCleared, 0, 0, tSpinType, isTSpin);
 	lastMoveRotate = false;
@@ -523,6 +530,14 @@ void Game::Reset() {
     current = GetRandomBlock();
     next = GetRandomBlock();
     score = 0;
+	lastMoveRotate = false;
+	linesCleared = 0;
+	lockResets = 15;
+	lockDelayActive = false;
+	lockDelayStartTime = 0.0;
+	justHeld = false;
+	comboCount = -1;
+	b2bDifficult = false;
 }
 
 /// @brief Method that houses the ghost block logic
@@ -617,14 +632,17 @@ void Game::UpdateScore(int rowsCleared, int softDropPoints, int hardDropPoints, 
         case 1: {
 			if (isTSpin) {
 				if (tSpinType) {
-					score += 800 * level;
+					score += (b2bDifficult) ? 800 * level * 1.5 : 800 * level;
+					b2bDifficult = true;
 					break;
 				} else {
-					score += 200 * level;
+					score += (b2bDifficult) ? 200 * level * 1.5 : 200 * level;
+					b2bDifficult = true;
 					break;
 				}
 			} else {
 				score += 100 * level;
+				b2bDifficult = false;
 				break;
 			}
 		}
@@ -632,30 +650,36 @@ void Game::UpdateScore(int rowsCleared, int softDropPoints, int hardDropPoints, 
         case 2: {
 			if (isTSpin) {
 				if (tSpinType) {
-					score += 1200 * level;
+					score += (b2bDifficult) ? 1200 * level * 1.5 : 1200 * level;
+					b2bDifficult = true;
 					break;
 				} else {
-					score += 400 * level;
+					score += (b2bDifficult) ? 400 * level * 1.5 : 400 * level;
+					b2bDifficult = true;
 					break;
 				}
 			} else {
 				score += 300 * level;
+				b2bDifficult = false;
 				break;
 			}
 		}
 
         case 3: {
 			if (isTSpin) {
-				score += 1600 * level;
+				score += (b2bDifficult) ? 1600 * level * 1.5 : 1600 * level;
+				b2bDifficult = true;
 				break;
 			} else {
 				score += 500 * level;
+				b2bDifficult = false;
 				break;
 			}
 		}
 
         case 4:
-            score += 800 * level;
+            score += (b2bDifficult) ? 800 * level * 1.5 : 800 * level;
+			b2bDifficult = true;
             break;
 
         default: {
@@ -676,6 +700,11 @@ void Game::UpdateScore(int rowsCleared, int softDropPoints, int hardDropPoints, 
     // Handling drops
     score += softDropPoints;
     score += hardDropPoints * 2;
+
+	// Handling combos
+	if (comboCount >= 0) {
+		score += (comboCount * 50) * level;
+	}
 }
 
 

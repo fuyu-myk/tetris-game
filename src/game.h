@@ -10,6 +10,7 @@ class Game {
         bool gameOver;
         int score;
         int linesCleared;
+        int comboCount;
         Music music;
         Game();
         ~Game();
@@ -37,6 +38,7 @@ class Game {
         bool lockDelayActive;
         double lockDelayStartTime;
         bool justHeld;
+        bool b2bDifficult;
         Block GetRandomBlock();
         std::vector<Block> GetAllBlocks();
         void MoveLeft();
