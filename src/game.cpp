@@ -14,7 +14,7 @@ Game::Game() {
 
     // Game state
     // Load a game state from one of the game state functions
-    //TripleTSpin();
+    TripleTSpin();
     
     // Initialising game attributes and score
     gameOver = false;
@@ -27,6 +27,9 @@ Game::Game() {
     justHeld = false;
     comboCount = -1;
     b2bDifficult = false;
+    tSpinRegular = false;
+    tSpinMini = false;
+    b2b = false;
 
     // Initialising audio
     InitAudioDevice();
@@ -435,9 +438,9 @@ bool Game::TSpinType() {
 /// and updates the score accordingly.
 void Game::LockBlock() {
     std::vector<Position> tiles = current.GetCellPositions();
-    bool tSpinType = false;
     bool isTSpin = false;
-
+    bool tSpinType = false;
+    
     for (Position item: tiles) {
         grid.grid[item.row][item.col] = current.id;
     }
@@ -632,52 +635,74 @@ void Game::UpdateScore(int rowsCleared, int softDropPoints, int hardDropPoints, 
         case 1: {
             if (isTSpin) {
                 if (tSpinType) {
+                    tSpinRegular = true;
+                    tSpinMini = false;
+                    b2b = (b2bDifficult) ? true : false;
                     score += (b2bDifficult) ? 800 * level * 1.5 : 800 * level;
                     b2bDifficult = true;
-                    break;
                 } else {
+                    tSpinMini = true;
+                    tSpinRegular = false;
+                    b2b = (b2bDifficult) ? true : false;
                     score += (b2bDifficult) ? 200 * level * 1.5 : 200 * level;
                     b2bDifficult = true;
-                    break;
                 }
             } else {
-                score += 100 * level;
+                tSpinRegular = false;
+                tSpinMini = false;
+                b2b = false;
                 b2bDifficult = false;
-                break;
+                score += 100 * level;
             }
+            break;
         }
 
         case 2: {
             if (isTSpin) {
                 if (tSpinType) {
+                    tSpinRegular = true;
+                    tSpinMini = false;
+                    b2b = (b2bDifficult) ? true : false;
                     score += (b2bDifficult) ? 1200 * level * 1.5 : 1200 * level;
                     b2bDifficult = true;
-                    break;
                 } else {
+                    tSpinMini = true;
+                    tSpinRegular = false;
+                    b2b = (b2bDifficult) ? true : false;
                     score += (b2bDifficult) ? 400 * level * 1.5 : 400 * level;
                     b2bDifficult = true;
-                    break;
                 }
             } else {
-                score += 300 * level;
+                tSpinRegular = false;
+                tSpinMini = false;
+                b2b = false;
                 b2bDifficult = false;
-                break;
+                score += 300 * level;
             }
+            break;
         }
 
         case 3: {
             if (isTSpin) {
+                tSpinRegular = true;
+                tSpinMini = false;
+                b2b = (b2bDifficult) ? true : false;
                 score += (b2bDifficult) ? 1600 * level * 1.5 : 1600 * level;
                 b2bDifficult = true;
-                break;
             } else {
-                score += 500 * level;
+                tSpinRegular = false;
+                tSpinMini = false;
+                b2b = false;
                 b2bDifficult = false;
-                break;
+                score += 500 * level;
             }
+            break;
         }
 
         case 4:
+            tSpinRegular = false;
+            tSpinMini = false;
+            b2b = (b2bDifficult) ? true : false;
             score += (b2bDifficult) ? 800 * level * 1.5 : 800 * level;
             b2bDifficult = true;
             break;
@@ -685,15 +710,21 @@ void Game::UpdateScore(int rowsCleared, int softDropPoints, int hardDropPoints, 
         default: {
             if (isTSpin) {
                 if (tSpinType) {
+                    tSpinRegular = true;
+                    tSpinMini = false;
                     score += 400 * level;
-                    break;
                 } else {
+                    tSpinMini = true;
+                    tSpinRegular = false;
                     score += 100 * level;
-                    break;
                 }
+                b2b = false;
             } else {
-                break;
+                tSpinMini = false;
+                tSpinRegular = false;
+                b2b = false;
             }
+            break;
         }
     }
 

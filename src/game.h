@@ -26,6 +26,11 @@ class Game {
         void MoveDown(bool softDrop);
         int HardDrop();
         void LockDelay();
+
+        // Reporting
+        bool tSpinRegular;
+        bool tSpinMini;
+        bool b2b;
     
     private:
         Grid grid;

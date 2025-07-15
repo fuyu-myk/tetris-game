@@ -10,6 +10,15 @@ double interval = 0.8;
 double lastMoveLeftTime = 0;
 double lastMoveRightTime = 0;
 double lastMoveDownTime = 0;
+int lastRecordedLinesCleared = 0;
+double reportStartTime = -1; // -1 means no active report
+bool hasActiveReport = false;
+int reportLinesCleared = 0;
+bool reportTSpinRegular = false;
+bool reportTSpinMini = false;
+bool reportB2B = false;
+bool lastTSpinRegular = false;
+bool lastTSpinMini = false;
 
 /**
  * @brief Checks if the specified interval has passed since the last update.
@@ -37,6 +46,42 @@ double Gravity(int level) {
     int x = level - 1;
 
     return pow(0.8 - (x * 0.007), x);
+}
+
+void Report(int numLinesCleared, bool tSpinRegular, bool tSpinMini, bool b2b, Font font) {
+    if (tSpinRegular) {
+        DrawTextEx(font, "T-Spin", {8 + 71, 590}, 24, 2, WHITE);
+    } else if (tSpinMini) {
+        DrawTextEx(font, "Mini", {8 + 116, 564}, 20, 2, WHITE);
+        DrawTextEx(font, "T-Spin", {8 + 71, 590}, 24, 2, WHITE);
+    }
+
+    if (numLinesCleared > 0) {
+        switch(numLinesCleared) {
+            case 1:
+                DrawTextEx(font, "SINGLE", {8 + 34, 620}, 30, 2, WHITE);
+                break;
+
+            case 2:
+                DrawTextEx(font, "DOUBLE", {8 + 20, 620}, 30, 2, WHITE);
+                break;
+
+            case 3:
+                DrawTextEx(font, "TRIPLE", {8 + 30, 620}, 30, 2, WHITE);
+                break;
+
+            case 4:
+                DrawTextEx(font, "TETRIS", {8 + 30, 620}, 30, 2, WHITE);
+                break;
+            
+            default:
+                break;
+        }
+    }
+
+    if (b2b) {
+        DrawTextEx(font, "b2b x1.5", {8 + 82, 652}, 14, 2, WHITE);
+    }
 }
 
 int main() {
@@ -107,6 +152,35 @@ int main() {
             snprintf(comboText, sizeof(comboText), "%d COMBO", game.comboCount);
             Vector2 comboSize = MeasureTextEx(font, comboText, 24, 2);
             DrawTextEx(font, comboText, {8 + (165 - comboSize.x) / 2, 240}, 24, 2, WHITE);
+        }
+
+        // Reporting - Check for new events to report
+        int currentLinesCleared = game.linesCleared - lastRecordedLinesCleared;
+        bool newTSpinRegular = game.tSpinRegular && !lastTSpinRegular;
+        bool newTSpinMini = game.tSpinMini && !lastTSpinMini;
+        bool hasNewReport = (newTSpinMini || newTSpinRegular || currentLinesCleared > 0);
+        
+        // If we have a new report, start it immediately (replacing any existing one)
+        if (hasNewReport) {
+            hasActiveReport = true;
+            reportStartTime = currentTime;
+            reportLinesCleared = currentLinesCleared;
+            reportTSpinRegular = newTSpinRegular;
+            reportTSpinMini = newTSpinMini;
+            reportB2B = game.b2b;
+            lastRecordedLinesCleared = game.linesCleared;
+        }
+        
+        // Update T-spin state tracking
+        lastTSpinRegular = game.tSpinRegular;
+        lastTSpinMini = game.tSpinMini;
+        
+        // Display active report if within 3 second window
+        if (hasActiveReport && (currentTime - reportStartTime < 3.0)) {
+            Report(reportLinesCleared, reportTSpinRegular, reportTSpinMini, reportB2B, font);
+        } else if (hasActiveReport) {
+            // Report has expired, clear it
+            hasActiveReport = false;
         }
         
         game.Draw();

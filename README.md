@@ -23,9 +23,9 @@ There exists a [great tutorial](https://www.youtube.com/watch?v=wVYKG_ch4yM) on 
 - [x] Difficult line clears
 
 ## Design
+- [x] Alerts for line clears, t-spins etc
 - [ ] Music & SFX
 - [ ] Custom graphics for blocks
-- [ ] Alerts for line clears, t-spins etc
 
 # How to run the project
 You will need to install the Raylib library before running this project. 
